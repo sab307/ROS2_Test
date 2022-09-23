@@ -15,53 +15,55 @@
 import rclpy
 from rclpy.node import Node
 
-from std_msgs.msg import Float64MultiArray
+from geometry_msgs.msg import Twist
 
 
 class PublisherForwardPosition(Node):
     def __init__(self):
-        super().__init__("publisher_forward_position_controller")
+        super().__init__("diffbot_base_controller")
         # Declare all parameters
         self.declare_parameter("controller_name", "forward_position_controller")
         self.declare_parameter("wait_sec_between_publish", 5)
         self.declare_parameter("goal_names", ["pos1", "pos2"])
 
+        #Declare a Twist variable
+        move_cmd = Twist()
         # Read parameters
-        controller_name = self.get_parameter("controller_name").value
-        wait_sec_between_publish = self.get_parameter("wait_sec_between_publish").value
+        move_cmd.linear.x = self.get_parameter("linear.x.max_velocity").value
+        move_cmd.angular.z = self.get_parameter("angular.z.max_velocity").value
         goal_names = self.get_parameter("goal_names").value
 
         # Read all positions from parameters
-        self.goals = []
-        for name in goal_names:
-            self.declare_parameter(name)
-            goal = self.get_parameter(name).value
-            if goal is None or len(goal) == 0:
-                raise Exception(f'Values for goal "{name}" not set!')
+        # self.goals = []
+        # for name in goal_names:
+        #     self.declare_parameter(name)
+        #     goal = self.get_parameter(name).value
+        #     if goal is None or len(goal) == 0:
+        #         raise Exception(f'Values for goal "{name}" not set!')
 
-            float_goal = []
-            for value in goal:
-                float_goal.append(float(value))
-            self.goals.append(float_goal)
+        #     float_goal = []
+        #     for value in goal:
+        #         float_goal.append(float(value))
+        #     self.goals.append(float_goal)
 
-        publish_topic = "/" + controller_name + "/" + "commands"
+        # publish_topic = "/" + controller_name + "/" + "commands"
 
-        self.get_logger().info(
-            f'Publishing {len(goal_names)} goals on topic "{publish_topic}"\
-              every {wait_sec_between_publish} s'
-        )
+        # self.get_logger().info(
+        #     f'Publishing {len(goal_names)} goals on topic "{publish_topic}"\
+        #       every {wait_sec_between_publish} s'
+        # )
 
-        self.publisher_ = self.create_publisher(Float64MultiArray, publish_topic, 1)
-        self.timer = self.create_timer(wait_sec_between_publish, self.timer_callback)
-        self.i = 0
+        self.publisher_ = self.create_publisher(move_cmd, 'cmd_vel', 1)
+        # self.timer = self.create_timer(wait_sec_between_publish, self.timer_callback)
+        # self.i = 0
 
     def timer_callback(self):
-        msg = Float64MultiArray()
-        msg.data = self.goals[self.i]
-        self.get_logger().info(f'Publishing: "{msg.data}"')
+        msg = Twist()
+        #msg.data = self.goals[self.i]
+        #self.get_logger().info(f'Publishing: "{msg.data}"')
         self.publisher_.publish(msg)
-        self.i += 1
-        self.i %= len(self.goals)
+        #self.i += 1
+        #self.i %= len(self.goals)
 
 
 def main(args=None):
