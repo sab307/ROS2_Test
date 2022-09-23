@@ -21,7 +21,7 @@ from launch.actions import DeclareLaunchArgument, ExecuteProcess, IncludeLaunchD
 from launch.actions import RegisterEventHandler
 from launch.event_handlers import OnProcessExit
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import LaunchConfiguration
+from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 
 from launch_ros.actions import Node
 
@@ -45,11 +45,19 @@ def generate_launch_description():
 
     print(params)
 
+    robot_controllers = PathJoinSubstitution(
+        [
+            FindPackageShare("ros2_control_demo_bringup"),
+            "config",
+            "diffbot_controller.yaml",
+        ]
+    )
+
     node_robot_state_publisher = Node(
         package='robot_state_publisher',
         executable='robot_state_publisher',
         output='screen',
-        parameters=[params],
+        parameters=[params, robot_controllers],
     )
 
     ignition_spawn_entity = Node(
