@@ -28,6 +28,8 @@ from launch_ros.actions import Node
 import xacro
 
 
+
+
 def generate_launch_description():
     # Launch Arguments
     use_sim_time = LaunchConfiguration('use_sim_time', default=True)
@@ -100,6 +102,14 @@ def generate_launch_description():
                 on_exit=[load_joint_trajectory_controller],
             )
         ),
+
+        Node(
+                package="ros2_control_test_nodes",
+                executable="publisher_forward_position_controller",
+                name="publisher_forward_position_controller",
+                parameters=[robot_controllers],
+                output="both",
+            ),
         node_robot_state_publisher,
         ignition_spawn_entity,
         # Launch Arguments
